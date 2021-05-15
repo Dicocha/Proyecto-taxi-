@@ -49,7 +49,7 @@ class App:
         conn.commit() 
         conn.close()
 
-    def Reflescar(App):
+    def Reflescar():
         for row in tree.get_children():
             tree.delete(row)
         App.Ver_datos(tree)
@@ -60,12 +60,11 @@ class Taxi:
         insertT = Toplevel()
 
         # Declaracion de variables
-        global varA, varI, enAreaT, enClaveT, enPlacaT, enNomproT, enNomconT, enMarcaT, enModeloT, enTelproT, enTelconT, enCorreoproT, enCorreoconT, enObservacionesT
-        varA = IntVar()
-        varI = IntVar()
+        global varA, varI, enAreaT, enClaveT, enPlacaT, enEstado, enNomproT, enNomconT, enMarcaT, enModeloT, enTelproT, enTelconT, enCorreoproT, enCorreoconT, enObservacionesT
         enAreaT = StringVar()
         enClaveT = StringVar()
         enPlacaT = StringVar()
+        enEstado = StringVar()
         enNomproT = StringVar()
         enNomconT = StringVar()
         enMarcaT = StringVar()
@@ -104,8 +103,7 @@ class Taxi:
         Entry(insertT, textvariable= enAreaT).place(x = 50, y = 50, width=400, height=20)
         Entry(insertT, textvariable= enClaveT).place(x = 50, y = 110, width=400, height=20)
         Entry(insertT, textvariable= enPlacaT).place(x = 50, y = 170, width = 400, height=20)
-        Checkbutton(insertT, text= 'Activo', variable= varA).place(x = 50, y = 230, width=100, height=20)
-        Checkbutton(insertT, text= 'Inactivo', variable= varI).place(x = 250, y = 230, width = 100, height=20)
+        Combobox(insertT,textvariable= enEstado, values= ('Activo', 'Inactivo'), state="readonly").place(x=50, y=230,width=400, height=20)
         Entry(insertT, textvariable= enNomproT).place(x = 50, y = 290, width=400, height=20)
         Entry(insertT, textvariable= enNomconT).place(x = 50, y = 350, width=400, height=20)
         Entry(insertT, textvariable= enMarcaT).place(x = 650, y = 50, width=400, height=20)
@@ -122,24 +120,10 @@ class Taxi:
         Button(insertT, text='Regresar', command = insertT.destroy).place(x = 800, y = 550, width=200, height=40)
 
     # Modulos Taxistas
-    def Estadoif():
-        if(varA.get() == True) and (varI.get() == False):
-            Estado = 'Activo'
-
-        elif(varA.get() == False) and (varI.get() == False):
-            Estado = messagebox.showinfo(title="Error", message='No seleccionó ninguna opción')
-
-        elif(varA.get() == True) and (varI.get() == True): 
-            Estado = messagebox.showinfo(title="Error", message='Solo Se puede seleccionar una')
-
-        else:
-            Estado = 'Inactivo'
-
-        return Estado
-
-    def Limpiar_EntryT(): #No sirve
+    def Limpiar_EntryT():
         enAreaT.set('')
         enClaveT.set('')
+        enEstado.set('')
         enPlacaT.set('')
         enNomproT.set('')
         enNomconT.set('')
@@ -151,13 +135,12 @@ class Taxi:
         enCorreoconT.set('')
         enObservacionesT.set('')
 
-    def Insertar_DatosT(): #No sirve
-        
+    def Insertar_DatosT():
         conn = pymysql.connect(host="localhost", port=3306, user="dicocha", passwd="dcc82002", db="Taxis")
 
         cursor = conn.cursor()
-        cursor.execute("INSERT INTO `Taxis` (`Areas`, `Clave`, `Placa`, `Estado`, `Nombre Propietario`, `Nombre Conductor`, `Marca Radio`, `Modelo Radio`, `Telefono Propietario`, `Telefono Conductor`, `E-mail Propietario`, `E-mail Conductor`, `Observaciones`) \
-            VALUES ('%d','%s','%s','%s','%s','%s','%s','%s','%d','%d','%s','%s','%s');" % (enAreaT.get(), enClaveT.get(), enPlacaT.get(), Taxi.Estadoif(), enNomproT.get(), enNomconT.get(), enMarcaT.get(), enModeloT.get(), enTelproT.get(), enTelconT.get(), enCorreoproT.get(), enCorreoconT.get(), enObservacionesT.get()))
+        cursor.execute("INSERT INTO `Taxis` (`Areas`, `Clave`, `Placa`, `Estado`, `Nombre Propietario`, `Nombre Conductor`, `Marca Radio`, `Modelo Radio`, `Telefono Propietario`, `Telefono Conductor`, `E-mail Propietario`, `E-mail Conductor`, `Observaciones`)\
+                            VALUES ('%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s');" % (enAreaT.get(), enClaveT.get(), enPlacaT.get(), enEstado.get(), enNomproT.get(), enNomconT.get(), enMarcaT.get(), enModeloT.get(), enTelproT.get(), enTelconT.get(), enCorreoproT.get(), enCorreoconT.get(), enObservacionesT.get()))
         
         conn.commit()
         conn.close()
@@ -226,7 +209,7 @@ class Cliente:
         Button(insertC, text='Regresar', command = insertC.destroy).place(x = 800, y = 550, width=200, height=40)
 
     # Modulos de Insertar Clientes
-    def Limpiar_EntryC(): #No sirve
+    def Limpiar_EntryC():
         enNombreC.set('')
         enTelCasaC.set('')
         enTelPerC.set('')
@@ -235,6 +218,9 @@ class Cliente:
         enObservacionesC.set('')
 
     def SeleccionTaxistas(insertC):
+        global Box
+        Box = StringVar()
+
         conn = pymysql.connect(host="localhost", port=3306, user="dicocha", passwd="dcc82002", db="Taxis")
         curs = conn.cursor()
         curs.execute("SELECT `Clave` FROM `Taxis` WHERE 1")
@@ -244,8 +230,7 @@ class Cliente:
         conn.close()
 
         results_for_combobox = [result[0] for result in results]
-
-        Combobox(insertC,values=results_for_combobox).pack()
+        Combobox(insertC, values=results_for_combobox, state="readonly", textvariable= Box).place(x=500, y= 400)
 
     def Ver_datosC(treeC):
         conn = pymysql.connect(host="localhost", port=3306, user="dicocha", passwd="dcc82002", db="Taxis")
@@ -263,12 +248,14 @@ class Cliente:
         conn.commit() 
         conn.close()
 
-    def Insertar_DatosC():#No sirve
+    def Insertar_DatosC():
         conn = pymysql.connect(host="localhost", port=3306, user="dicocha", passwd="dcc82002", db="Taxis")
 
         cursor = conn.cursor()
-        cursor.execute("INSERT INTO `Cliente` (`Nombre`, `Tel. Casa`, `Tel. Cel`, `Direccion`, `Email`, `Observaciones`) \
-            VALUES ('%s', '%d', '%d', '%s', '%s', '%s')" % (enNombreC.get(), enTelCasaC.get(), enTelPerC.get(), enDirecC.get(), enCorreoPerC.get(), enObservacionesC.get())
+        cursor.execute(
+            
+            "INSERT INTO `Cliente` (`Nombre`, `Tel. Casa`, `Tel. Cel`, `Direccion`, `Email`, `Taxista`, `Observaciones`)\
+            VALUES ('%s', '%d', '%d', '%s', '%s', '%s', '%s')" % (enNombreC.get(), enTelCasaC.get(), enTelPerC.get(), enDirecC.get(), enCorreoPerC.get(), Box.get() ,enObservacionesC.get())
             )
 
         conn.commit()
@@ -292,8 +279,8 @@ frame = LabelFrame(main,text="Opciones de ajuste").place(x=150, y=250, width=100
 frame2 = LabelFrame(main,text="Entraste como:").place(x=1150, y=650, width= 200, height= 100)
 
 #Labels
-Label(frame, text= 'Area:').place(x=225, y=300, width= 120, height=30)
-Label(frame, text= 'Clave:').place(x=450, y=500, width= 130, height=30)
+Label(frame, text= 'Area:').place(x=280, y=300, width= 120, height=30)
+Label(frame, text= 'Clave:').place(x=500, y=500, width= 130, height=30)
 Label(frame2, text= enUsuario.get()).place(x=1160, y=670, width= 130, height=30)
 
 #Entry
